@@ -1,0 +1,64 @@
+﻿@model ExcOrganizer.Data.Models.Trip
+@{
+    ViewData["Title"] = "Изтриване на екскурзия";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+        <div class="card shadow border-0 border-top border-danger border-4">
+            <div class="card-header bg-danger text-white py-3">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Изтриване на екскурзия
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-exclamation-circle-fill fs-5"></i>
+                    <span>Сигурен ли си? Това действие <b>не може да се върне!</b></span>
+                </div>
+
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item">
+                        <i class="bi bi-type me-2 text-primary"></i>
+                        <b>Заглавие:</b> @Model.Title
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-geo-alt-fill me-2 text-danger"></i>
+                        <b>Дестинация:</b> @Model.Destination
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-currency-euro me-2 text-success"></i>
+                        <b>Цена:</b> @Model.Price.ToString("0.00") €
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-calendar-range me-2 text-secondary"></i>
+                        <b>Дати:</b> @Model.StartDate.ToString("dd.MM.yyyy") - @Model.EndDate.ToString("dd.MM.yyyy")
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-people-fill me-2 text-info"></i>
+                        <b>Места:</b> @Model.Seats
+                    </li>
+                </ul>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Да, изтрий
+                        </button>
+                        <a class="btn btn-outline-secondary" href="/Trips">
+                            <i class="bi bi-arrow-left me-1"></i> Назад
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>

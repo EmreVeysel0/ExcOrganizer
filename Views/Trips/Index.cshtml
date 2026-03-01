@@ -1,0 +1,75 @@
+﻿@{
+    Layout = "_Layout";
+}
+@model IEnumerable<ExcOrganizer.Data.Models.Trip>
+
+@{
+    ViewData["Title"] = "Екскурзии";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 fw-bold">
+        <i class="bi bi-map-fill text-primary me-2"></i>Екскурзии
+    </h2>
+
+    @if (User.IsInRole("Administrator"))
+    {
+        <a class="btn btn-primary" href="/Trips/Create">
+            <i class="bi bi-plus-circle me-1"></i> Добави екскурзия
+        </a>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info d-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill fs-5"></i>
+        <span>Няма добавени екскурзии.</span>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var t in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-header bg-primary text-white fw-semibold">
+                        <i class="bi bi-geo-alt-fill me-1"></i> @t.Destination
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">@t.Title</h5>
+                        <p class="card-text mb-1">
+                            <i class="bi bi-currency-euro text-success me-1"></i>
+                            <b>Цена:</b> @t.Price.ToString("0.00") €
+                        </p>
+                        <p class="card-text mb-1">
+                            <i class="bi bi-calendar-range text-secondary me-1"></i>
+                            <b>Дати:</b> @t.StartDate.ToString("dd.MM.yyyy") - @t.EndDate.ToString("dd.MM.yyyy")
+                        </p>
+                        <p class="card-text mb-0">
+                            <i class="bi bi-people-fill text-info me-1"></i>
+                            <b>Места:</b> @t.Seats
+                        </p>
+                    </div>
+
+                    <div class="card-footer bg-white border-0 d-flex gap-2 flex-wrap">
+                        <a class="btn btn-sm btn-primary" href="/Trips/Details/@t.Id">
+                            <i class="bi bi-eye me-1"></i> Детайли
+                        </a>
+
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <a class="btn btn-sm btn-outline-secondary" href="/Trips/Edit/@t.Id">
+                                <i class="bi bi-pencil me-1"></i> Редакция
+                            </a>
+                            <a class="btn btn-sm btn-outline-danger" href="/Trips/Delete/@t.Id">
+                                <i class="bi bi-trash me-1"></i> Изтрий
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
