@@ -283,3 +283,4 @@ C:\Users\Lenovo\Desktop\ДипломенПроект\ExcOrganizer\ExcOrganizer\b
 C:\Users\Lenovo\Desktop\ДипломенПроект\ExcOrganizer\ExcOrganizer\bin\Debug\net8.0\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\Lenovo\Desktop\ДипломенПроект\ExcOrganizer\ExcOrganizer\bin\Debug\net8.0\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\Lenovo\Desktop\ДипломенПроект\ExcOrganizer\ExcOrganizer\bin\Debug\net8.0\runtimes\win-x86\native\e_sqlite3.dll
+C:\Users\Lenovo\Desktop\ДипломенПроект\ExcOrganizer\ExcOrganizer\obj\Debug\net8.0\ExcOrganizer.sourcelink.json

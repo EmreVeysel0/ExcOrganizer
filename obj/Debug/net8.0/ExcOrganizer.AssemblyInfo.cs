@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ExcOrganizer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68d7dbc918db7aeba585c1a46c9a5bd033df6b17")]
 [assembly: System.Reflection.AssemblyProductAttribute("ExcOrganizer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ExcOrganizer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
