@@ -17,5 +17,6 @@
         public DateTime EndDate { get; set; }
 
         public int Seats { get; set; }
+        public ICollection<TripImage> Images { get; set; } = new List<TripImage>();
     }
 }

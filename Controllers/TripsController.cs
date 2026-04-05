@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ExcOrganizer.Data;
 using ExcOrganizer.Data.Models;
@@ -15,27 +10,29 @@ namespace ExcOrganizer.Controllers
     public class TripsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public TripsController(ApplicationDbContext context)
+        public TripsController(ApplicationDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
-        // GET: Trips
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Trips.ToListAsync());
+            return View(await _context.Trips.Include(t => t.Images).ToListAsync());
         }
 
-        // GET: Trips/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var trip = await _context.Trips.FirstOrDefaultAsync(m => m.Id == id);
+            var trip = await _context.Trips
+                .Include(t => t.Images)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (trip == null) return NotFound();
 
-            // Проверяваме дали потребителят вече е резервирал
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,7 +43,6 @@ namespace ExcOrganizer.Controllers
             return View(trip);
         }
 
-        // POST: Trips/Book/5
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -63,7 +59,6 @@ namespace ExcOrganizer.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Проверка дали вече е резервирал
             bool alreadyBooked = _context.Bookings
                 .Any(b => b.TripId == id && b.UserId == userId);
 
@@ -73,7 +68,6 @@ namespace ExcOrganizer.Controllers
                 return RedirectToAction("Details", new { id });
             }
 
-            // Намаляме местата и записваме резервацията
             trip.Seats--;
 
             _context.Bookings.Add(new Booking
@@ -85,21 +79,35 @@ namespace ExcOrganizer.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Успешно резервира място за \"" + trip.Title + "\"!";
-            return RedirectToAction("Details", new { id });
+            TempData["Success"] = "Успешно резервира място!";
+            return RedirectToAction("MyTrips");
         }
 
-        // GET: Trips/Create
+        [Authorize]
+        public async Task<IActionResult> MyTrips()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var bookings = await _context.Bookings
+                .Include(b => b.Trip)
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+
+            return View(bookings);
+        }
+
         [Authorize(Roles = "Administrator")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Trips/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Destination,Description,Price,StartDate,EndDate,Seats")] Trip trip)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Title,Destination,Description,Price,StartDate,EndDate,Seats")] Trip trip,
+            List<IFormFile>? imageFiles)
         {
             if (string.IsNullOrWhiteSpace(trip.Title) || string.IsNullOrWhiteSpace(trip.Destination))
             {
@@ -108,26 +116,61 @@ namespace ExcOrganizer.Controllers
             }
 
             _context.Trips.Add(trip);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
+            if (imageFiles != null && imageFiles.Count > 0)
+            {
+                var webRoot = _env.WebRootPath
+                    ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+                var uploadsFolder = Path.Combine(webRoot, "uploads", "trips");
+                Directory.CreateDirectory(uploadsFolder);
+
+                foreach (var file in imageFiles)
+                {
+                    if (file.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                        var filePath = Path.Combine(uploadsFolder, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        _context.TripImages.Add(new TripImage
+                        {
+                            TripId = trip.Id,
+                            ImagePath = "/uploads/trips/" + fileName
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index");
         }
 
-        // GET: Trips/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var trip = await _context.Trips.FindAsync(id);
+            var trip = await _context.Trips
+                .Include(t => t.Images)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
             if (trip == null) return NotFound();
 
             return View(trip);
         }
 
-        // POST: Trips/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Destination,Description,Price,StartDate,EndDate,Seats")] Trip trip)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("Id,Title,Destination,Description,Price,StartDate,EndDate,Seats")] Trip trip,
+            List<IFormFile>? imageFiles)
         {
             if (id != trip.Id) return NotFound();
 
@@ -143,12 +186,66 @@ namespace ExcOrganizer.Controllers
                     if (!TripExists(trip.Id)) return NotFound();
                     else throw;
                 }
+
+                if (imageFiles != null && imageFiles.Count > 0)
+                {
+                    var webRoot = _env.WebRootPath
+                        ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+                    var uploadsFolder = Path.Combine(webRoot, "uploads", "trips");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    foreach (var file in imageFiles)
+                    {
+                        if (file.Length > 0)
+                        {
+                            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                            var filePath = Path.Combine(uploadsFolder, fileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await file.CopyToAsync(stream);
+                            }
+
+                            _context.TripImages.Add(new TripImage
+                            {
+                                TripId = trip.Id,
+                                ImagePath = "/uploads/trips/" + fileName
+                            });
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             return View(trip);
         }
 
-        // GET: Trips/Delete/5
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImage(int imageId, int tripId)
+        {
+            var image = await _context.TripImages.FindAsync(imageId);
+            if (image != null)
+            {
+                var webRoot = _env.WebRootPath
+                    ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+                var filePath = Path.Combine(webRoot, image.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+                if (System.IO.File.Exists(filePath))
+                    System.IO.File.Delete(filePath);
+
+                _context.TripImages.Remove(image);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Edit", new { id = tripId });
+        }
+
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -159,7 +256,6 @@ namespace ExcOrganizer.Controllers
             return View(trip);
         }
 
-        // POST: Trips/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

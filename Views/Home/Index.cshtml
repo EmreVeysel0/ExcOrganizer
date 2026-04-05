@@ -4,7 +4,6 @@
     Layout = "_Layout";
 }
 
-<!-- HERO -->
 <div class="hero-section mb-5">
     <div class="hero-content text-center py-5">
         <h1 class="hero-title">Открий света с нас</h1>
@@ -21,7 +20,6 @@
     </div>
 </div>
 
-<!-- TRIPS SECTION -->
 <div class="mb-4 d-flex justify-content-between align-items-center">
     <div>
         <h2 class="fw-bold mb-1" style="color:#1a73e8;">Предстоящи екскурзии</h2>
@@ -64,11 +62,7 @@ else
 
                         @if (!string.IsNullOrWhiteSpace(t.Description))
                         {
-                            <p class="text-muted small mb-3" style="
-                                            overflow: hidden;
-                                            display: -webkit-box;
-                                            -webkit-line-clamp: 2;
-                                            -webkit-box-orient: vertical;">
+                            <p class="text-muted small mb-3" style="overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
                                 @t.Description
                             </p>
                         }
@@ -94,7 +88,6 @@ else
     </div>
 }
 
-<!-- INFO SECTION -->
 <div class="row mt-5 mb-4 g-4">
     <div class="col-md-4">
         <div class="info-box text-center p-4">
@@ -126,7 +119,6 @@ else
 </div>
 
 <style>
-    /* HERO */
     .hero-section {
         background: linear-gradient(135deg, #1a73e8, #0d47a1);
         border-radius: 16px;
@@ -174,7 +166,6 @@ else
             border-color: white;
         }
 
-    /* TRIP CARDS */
     .trip-home-card {
         border-radius: 12px !important;
         overflow: hidden;
@@ -207,7 +198,6 @@ else
             font-weight: 500;
         }
 
-    /* INFO BOXES */
     .info-box {
         background: white;
         border-radius: 12px;

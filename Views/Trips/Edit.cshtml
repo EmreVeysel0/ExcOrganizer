@@ -17,7 +17,7 @@
 
                 <p class="text-muted mb-4">Промени данните и натисни „Запази промените".</p>
 
-                <form asp-action="Edit" method="post">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id" />
 
@@ -71,11 +71,45 @@
                             <input asp-for="StartDate" type="date" class="form-control" />
                         </div>
 
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">
                                 <i class="bi bi-calendar-x me-1 text-danger"></i>Крайна дата
                             </label>
                             <input asp-for="EndDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-images me-1 text-primary"></i>Снимки
+                        </label>
+
+                        @if (Model.Images != null && Model.Images.Any())
+                        {
+                            <div class="row g-2 mb-3">
+                                @foreach (var img in Model.Images)
+                                {
+                                    <div class="col-4 col-md-3 position-relative">
+                                        <img src="@img.ImagePath" alt="снимка"
+                                             style="width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid #dee2e6;" />
+                                        <form action="/Trips/DeleteImage" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="imageId" value="@img.Id" />
+                                            <input type="hidden" name="tripId" value="@Model.Id" />
+                                            <button type="submit"
+                                                    style="position:absolute; top:4px; right:4px; background:#dc3545; border:none; color:white; border-radius:50%; width:22px; height:22px; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <input type="file" name="imageFiles" class="form-control"
+                               accept="image/*" multiple />
+                        <div class="form-text text-muted">
+                            Избери нови снимки за да добавиш към съществуващите
                         </div>
                     </div>
 

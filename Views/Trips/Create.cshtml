@@ -23,7 +23,7 @@
                     </div>
                 }
 
-                <form asp-action="Create" method="post">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
 
                     <div class="mb-3">
@@ -80,12 +80,23 @@
                                    value="@(Model != null && Model.StartDate != default ? Model.StartDate.ToString("yyyy-MM-dd") : "")" />
                         </div>
 
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">
                                 <i class="bi bi-calendar-x me-1 text-danger"></i>Крайна дата
                             </label>
                             <input type="date" name="EndDate" class="form-control"
                                    value="@(Model != null && Model.EndDate != default ? Model.EndDate.ToString("yyyy-MM-dd") : "")" />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-images me-1 text-primary"></i>Снимки
+                        </label>
+                        <input type="file" name="imageFiles" class="form-control"
+                               accept="image/*" multiple />
+                        <div class="form-text text-muted">
+                            Можеш да избереш няколко снимки наведнъж (JPG, PNG, WEBP)
                         </div>
                     </div>
 
