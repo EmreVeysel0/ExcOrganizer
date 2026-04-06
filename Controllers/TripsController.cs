@@ -96,6 +96,32 @@ namespace ExcOrganizer.Controllers
 
             return View(bookings);
         }
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelBooking(int bookingId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var booking = await _context.Bookings
+                .Include(b => b.Trip)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && b.UserId == userId);
+
+            if (booking == null)
+            {
+                TempData["Error"] = "Резервацията не беше намерена.";
+                return RedirectToAction("MyTrips");
+            }
+
+            // Връщаме мястото
+            booking.Trip.Seats++;
+
+            _context.Bookings.Remove(booking);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Резервацията беше успешно отменена.";
+            return RedirectToAction("MyTrips");
+        }
 
         [Authorize(Roles = "Administrator")]
         public IActionResult Create()
@@ -174,58 +200,53 @@ namespace ExcOrganizer.Controllers
         {
             if (id != trip.Id) return NotFound();
 
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    _context.Update(trip);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TripExists(trip.Id)) return NotFound();
-                    else throw;
-                }
-
-                if (imageFiles != null && imageFiles.Count > 0)
-                {
-                    var webRoot = _env.WebRootPath
-                        ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-                    var uploadsFolder = Path.Combine(webRoot, "uploads", "trips");
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    foreach (var file in imageFiles)
-                    {
-                        if (file.Length > 0)
-                        {
-                            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                            var filePath = Path.Combine(uploadsFolder, fileName);
-
-                            using (var stream = new FileStream(filePath, FileMode.Create))
-                            {
-                                await file.CopyToAsync(stream);
-                            }
-
-                            _context.TripImages.Add(new TripImage
-                            {
-                                TripId = trip.Id,
-                                ImagePath = "/uploads/trips/" + fileName
-                            });
-                        }
-                    }
-
-                    await _context.SaveChangesAsync();
-                }
-
-                return RedirectToAction(nameof(Index));
+                _context.Update(trip);
+                await _context.SaveChangesAsync();
             }
-            return View(trip);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TripExists(trip.Id)) return NotFound();
+                else throw;
+            }
+
+            if (imageFiles != null && imageFiles.Count > 0)
+            {
+                var webRoot = _env.WebRootPath
+                    ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+                var uploadsFolder = Path.Combine(webRoot, "uploads", "trips");
+                Directory.CreateDirectory(uploadsFolder);
+
+                foreach (var file in imageFiles)
+                {
+                    if (file.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                        var filePath = Path.Combine(uploadsFolder, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        _context.TripImages.Add(new TripImage
+                        {
+                            TripId = trip.Id,
+                            ImagePath = "/uploads/trips/" + fileName
+                        });
+
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpGet]
         [Authorize(Roles = "Administrator")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteImage(int imageId, int tripId)
         {
             var image = await _context.TripImages.FindAsync(imageId);
