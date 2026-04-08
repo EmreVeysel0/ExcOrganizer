@@ -21,8 +21,17 @@
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
 
                 <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-
                     <div class="mb-3">
+                        <label asp-for="Input.Username" class="form-label fw-semibold small">
+                            <i class="bi bi-person me-1 text-primary"></i> Потребителско име
+                        </label>
+                        <input asp-for="Input.Username" class="form-control"
+                               autocomplete="username"
+                               placeholder="напр. ivan123" />
+                        <span asp-validation-for="Input.Username" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+
                         <label asp-for="Input.Email" class="form-label fw-semibold small">
                             <i class="bi bi-envelope me-1 text-primary"></i> Имейл
                         </label>

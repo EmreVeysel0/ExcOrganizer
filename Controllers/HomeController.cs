@@ -7,6 +7,10 @@ namespace ExcOrganizer.Controllers
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        public IActionResult About()
+        {
+            return View();
+        }
 
         public HomeController(ApplicationDbContext context)
         {

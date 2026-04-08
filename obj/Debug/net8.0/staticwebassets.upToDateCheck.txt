@@ -60,11 +60,10 @@ wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\trips\0552419c-0bb6-4f06-8f7c-7fd9dfd0d7cc.jpg
 wwwroot\uploads\trips\09e00940-0875-426b-9452-a59d8aa80c1c.webp
-wwwroot\uploads\trips\149982d4-842e-4cee-9898-8ea7c4bf196a.webp
-wwwroot\uploads\trips\14e2f8a4-c18f-4f15-a7dc-b54edaa7c837.webp
 wwwroot\uploads\trips\1eaa3d45-8249-4aae-913a-390f6704bce7.jpg
-wwwroot\uploads\trips\56707987-aec8-48b3-b034-0bddd9a70a5a.jpg
+wwwroot\uploads\trips\685d5ef5-1666-408a-a6ad-ffd9e8f73546.jpg
+wwwroot\uploads\trips\855c4326-1db2-40dd-abbc-022d2b4fa543.webp
 wwwroot\uploads\trips\90681580-0b95-4a56-8ee6-c36de4d8541f.jpg
+wwwroot\uploads\trips\ae1054f7-3489-4625-bc95-9a658915e996.webp
 wwwroot\uploads\trips\cb874a96-6562-40f7-a254-09df2e1ff517.jpg
-wwwroot\uploads\trips\f4135ecc-7794-495f-b170-1ea688b00419.webp
 wwwroot\uploads\trips\f83ff342-480a-4bdb-887a-0483cecdc14c.jpg
