@@ -23,13 +23,14 @@
                 <form id="account" method="post">
 
                     <div class="mb-3">
-                        <label asp-for="Input.Email" class="form-label fw-semibold small">
+                        <label asp-for="Input.Username" class="form-label fw-semibold small">
                             <i class="bi bi-person me-1 text-primary"></i> Потребителско име или имейл
                         </label>
-                        <input asp-for="Input.Email" class="form-control"
+                        
+                        <input asp-for="Input.Username" type="text" class="form-control"
                                autocomplete="username"
                                placeholder="ivan123" />
-                        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        <span asp-validation-for="Input.Username" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">

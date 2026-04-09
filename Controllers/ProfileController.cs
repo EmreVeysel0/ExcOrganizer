@@ -27,6 +27,7 @@ namespace ExcOrganizer.Controllers
             return View(user);
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeEmail(string newEmail)
@@ -48,9 +49,9 @@ namespace ExcOrganizer.Controllers
             }
 
             user.Email = newEmail;
-            user.UserName = newEmail;
+            
             user.NormalizedEmail = newEmail.ToUpper();
-            user.NormalizedUserName = newEmail.ToUpper();
+            
 
             var result = await _userManager.UpdateAsync(user);
 
@@ -100,5 +101,6 @@ namespace ExcOrganizer.Controllers
 
             return RedirectToAction("Index");
         }
+
     }
 }

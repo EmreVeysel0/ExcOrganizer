@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using IdentityUser = Microsoft.AspNetCore.Identity.IdentityUser;
 
 namespace ExcOrganizer.Areas.Identity.Pages.Account
 {
@@ -25,65 +24,38 @@ namespace ExcOrganizer.Areas.Identity.Pages.Account
         private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        // КОРЕКЦИЯ: Добавяме UserManager в конструктора, за да можем да търсим по имейл
+        public LoginModel(SignInManager<IdentityUser> signInManager,
+                          ILogger<LoginModel> logger,
+                          UserManager<IdentityUser> userManager)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _userManager = userManager;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string ErrorMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            [Required(ErrorMessage = "Моля, въведете потребителско име или имейл.")]
+            [Display(Name = "Потребителско име или имейл")]
+            public string Username { get; set; } // Вече се казва Username
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
+            [Required(ErrorMessage = "Моля, въведете парола.")]
             [DataType(DataType.Password)]
+            [Display(Name = "Парола")]
             public string Password { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Display(Name = "Remember me?")]
+            [Display(Name = "Запомни ме")]
             public bool RememberMe { get; set; }
         }
 
@@ -96,7 +68,6 @@ namespace ExcOrganizer.Areas.Identity.Pages.Account
 
             returnUrl ??= Url.Content("~/");
 
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -108,18 +79,21 @@ namespace ExcOrganizer.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
 
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
-                // Опитваме с потребителско име
+                // 1. Първо опитваме вход директно с написаното (като потребителско име)
                 var result = await _signInManager.PasswordSignInAsync(
-                    Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                    Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
-                // Ако не успее — опитваме с имейл
+                // 2. Ако не успее, проверяваме дали това не е имейл
                 if (!result.Succeeded)
                 {
-                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    var user = await _userManager.FindByEmailAsync(Input.Username);
                     if (user != null)
                     {
+                        // Ако намерим потребител с такъв имейл, влизаме с неговия UserName
                         result = await _signInManager.PasswordSignInAsync(
                             user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                     }
@@ -127,10 +101,20 @@ namespace ExcOrganizer.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);
                 }
 
-                ModelState.AddModelError(string.Empty, "Грешно потребителско име или парола.");
+                if (result.IsLockedOut)
+                {
+                    _logger.LogWarning("User account locked out.");
+                    return RedirectToPage("./Lockout");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Невалиден вход. Проверете данните си.");
+                    return Page();
+                }
             }
 
             return Page();
